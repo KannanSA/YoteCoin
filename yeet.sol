@@ -1,5 +1,5 @@
-#Copyright KANNAN SEKAR ANNNU RADHA  Yotecoin
-### Anthony Lai whitepaper. Etherdelta ledger nano wallet BTC at home.
+//Copyright KANNAN SEKAR ANNNU RADHA  Yotecoin
+//Anthony Lai whitepaper. Etherdelta ledger nano wallet BTC at home.
 
 
 from binance.client import Client
