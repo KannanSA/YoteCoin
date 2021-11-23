@@ -1,56 +1,122 @@
 //Copyright KANNAN SEKAR ANNNU RADHA  Yotecoin
 //Anthony Lai whitepaper. Etherdelta ledger nano wallet BTC at home.
 
+pragma solidity ^0.4.24;
 
-from binance.client import Client
-import time
-import matplotlib
-from binance.enums import  "
+// ----------------------------------------------------------------------------
+// YoteCoin token contract
+//
+// Symbol        : ¥
+// Name          : YoteCoin
+// Total supply  : 6000000
+// Decimals      : 2
+// Owner Account : 0xa94E44EB1b0bD27253Cb1E1552a616Ec0DF1f125
+//
+// ----------------------------------------------------------------------------
+contract SafeMath {
 
-import time
-import dateparser
-import pytz
-import json
+    function safeAdd(uint a, uint b) public pure returns (uint c) {
+        c = a + b;
+        require(c >= a);
+    }
 
-from datetime import datetime
-from binance.client import Client
+    function safeSub(uint a, uint b) public pure returns (uint c) {
+        require(b <= a);
+        c = a - b;
+    }
 
-def run() :
-    #get system status
-status = client.get_system_status()
-print ("\nExchange Status ", status)
+    function safeMul(uint a, uint b) public pure returns (uint c) {
+        c = a * b;
+        require(a == 0 || c / a == b);
+    }
 
-#Account withdrawal history info
-withdraws = client.get_withdraw_history()
-print("\nExchange Info (Limits): ", info)
+    function safeDiv(uint a, uint b) public pure returns (uint c) {
+        require(b > 0);
+        c = a / b;
+    }
+}
 
-#place a test market buy order, to place an actual order use the create_order function
+contract ERC20Interface {
+    function totalSupply() public constant returns (uint);
+    function balanceOf(address tokenOwner) public constant returns (uint balance);
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
+    function transfer(address to, uint tokens) public returns (bool success);
+    function approve(address spender, uint tokens) public returns (bool success);
+    function transferFrom(address from, address to, uint tokens) public returns (bool success);
 
-coin_prices(list_of_symbols)
-coin_tickers(list_of_symbols)
-for symbol in list_of_symols:
-    market_depth(symbol)
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+}
 
-    def convert_time_binance(gt) :
-        #converts from binance timeformat (milliseconds) to time-struct
-        #gt = get client.get.server time()
-    print("Binance Time: ", gt)
-    print(time.localtime())
-    aa =str(gt)
-    bb =aa.replace("('serverTime': ","")
-    gg =int(aa)
-    ff =gg-10799260
-    uu =ff/1000
-    yy =int(uu)
-    tt =time.localtime(yy)
-    #print(tt)
-    return tt
+contract ApproveAndCallFallBack {
+    function receiveApproval(address from, uint256 tokens, address token, bytes data) public;
+}
 
-def merket_depth(sym, num_entries=10):
-    #get market depth
-    #retrieve and format market depth incliding time-stamp
-    i=0 #used as counter for number of entries
-    print("Order Book: ", convert_time_binance(client.get_server_time()))
-    depth = client.get_order_book(symbol=sym)
-    print("\n", sym, "\nDepth      ASKS:\n")
-    print("Price      Amount")
+contract YoteCoin is ERC20Interface, SafeMath {
+    string public symbol;
+    string public  name;
+    uint8 public decimals;
+    uint public _totalSupply;
+
+    mapping(address => uint) balances;
+    mapping(address => mapping(address => uint)) allowed;
+
+
+    constructor() public {
+        symbol = "¥";
+        name = "YoteCoin";
+        decimals = 2;
+        _totalSupply = 6000000;
+        balances[0xa94E44EB1b0bD27253Cb1E1552a616Ec0DF1f125] = _totalSupply;
+        emit Transfer(address(0), 0xa94E44EB1b0bD27253Cb1E1552a616Ec0DF1f125, _totalSupply);
+    }
+
+    function totalSupply() public constant returns (uint) {
+        return _totalSupply  - balances[address(0)];
+    }
+
+
+    function balanceOf(address tokenOwner) public constant returns (uint balance) {
+        return balances[tokenOwner];
+    }
+
+    function transfer(address to, uint tokens) public returns (bool success) {
+        balances[msg.sender] = safeSub(balances[msg.sender], tokens);
+        balances[to] = safeAdd(balances[to], tokens);
+        emit Transfer(msg.sender, to, tokens);
+        return true;
+    }
+
+    function approve(address spender, uint tokens) public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        emit Approval(msg.sender, spender, tokens);
+        return true;
+    }
+
+
+    function transferFrom(address from, address to, uint tokens) public returns (bool success) {
+        balances[from] = safeSub(balances[from], tokens);
+        allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens);
+        balances[to] = safeAdd(balances[to], tokens);
+        emit Transfer(from, to, tokens);
+        return true;
+    }
+
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining) {
+        return allowed[tokenOwner][spender];
+    }
+
+
+    function approveAndCall(address spender, uint tokens, bytes data) public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        emit Approval(msg.sender, spender, tokens);
+        ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, this, data);
+        return true;
+    }
+
+
+    function () public payable {
+        revert();
+    }
+}
+
