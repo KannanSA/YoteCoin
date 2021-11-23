@@ -13,28 +13,6 @@ pragma solidity ^0.4.24;
 // Owner Account : 0xa94E44EB1b0bD27253Cb1E1552a616Ec0DF1f125
 //
 // ----------------------------------------------------------------------------
-contract SafeMath {
-
-    function safeAdd(uint a, uint b) public pure returns (uint c) {
-        c = a + b;
-        require(c >= a);
-    }
-
-    function safeSub(uint a, uint b) public pure returns (uint c) {
-        require(b <= a);
-        c = a - b;
-    }
-
-    function safeMul(uint a, uint b) public pure returns (uint c) {
-        c = a * b;
-        require(a == 0 || c / a == b);
-    }
-
-    function safeDiv(uint a, uint b) public pure returns (uint c) {
-        require(b > 0);
-        c = a / b;
-    }
-}
 
 contract ERC20Interface {
     function totalSupply() public constant returns (uint);
@@ -120,3 +98,25 @@ contract YoteCoin is ERC20Interface, SafeMath {
     }
 }
 
+contract SafeMath {
+
+    function safeAdd(uint a, uint b) public pure returns (uint c) {
+        c = a + b;
+        require(c >= a);
+    }
+
+    function safeSub(uint a, uint b) public pure returns (uint c) {
+        require(b <= a);
+        c = a - b;
+    }
+
+    function safeMul(uint a, uint b) public pure returns (uint c) {
+        c = a * b;
+        require(a == 0 || c / a == b);
+    }
+
+    function safeDiv(uint a, uint b) public pure returns (uint c) {
+        require(b > 0);
+        c = a / b;
+    }
+}
